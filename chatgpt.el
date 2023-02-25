@@ -27,7 +27,29 @@
   '(("doc" . "Please write the documentation for the following function.\n\n%s")
     ("bug" . "There is a bug in the following function, please help me fix it.\n\n%s")
     ("understand" . "What is the following?\n\n%s")
-    ("improve" . "Please improve the following.\n\n%s"))
+    ("improve" . "Please improve the following.\n\n%s")
+    ("sentences" . "Make 3 sentences with this. \n\n\"%s\"")
+    ("grammar" . "Grammatically correct this. \n\n\"%s\"")
+    ("mermaid" . "Explain this concept with mermaid diagram code \n\n\"%s\"")
+    ("graphviz" . "Explain this concept with graphviz diagram code \n\n\"%s\"")
+    ("summarize" . "Summarize this with one sentence \n\n\"%s\"")
+    ("explain15" . "Explain this to 15 years nerd \n\n\"%s\"")
+    ("explain expert" . "Explain this to expert \n\n\"%s\"")
+    ("python" . "translform to python code \n\n\"%s\"")
+    ("rust" . "translform to rust code \n\n\"%s\"")
+    ("ruby" . "translform to ruby code \n\n\"%s\"")
+    ("haskell" . "translform to haskell code \n\n\"%s\"")
+    ("c" . "translform to c code \n\n\"%s\"")
+    ("example" . "give me some example of this \n\n\"%s\"")
+    ("concise" . "give me concise one word that address this sentence \n\n\"%s\"")
+    ("metaphorical concept" . "metaphorical concept between \n\n\"%s\"")
+    ("line" . "explain it line by line \n\n\"%s\"")
+    ("child-concept (subset)" . "give me subset concepts of this \n\n\"%s\"")
+    ("parent-concept (superset)" . "give me superset concepts of this \n\n\"%s\"")
+    ("underbar" . "Explain this concept, but proper nouns have to be processed as underbar ___, and numbered under the explanation.. What I mean is, extract proper nouns, and process it as ____, and each answer has to be listed under the your answer, with increasing numbers
+  \n\n\"%s\"")
+    )
+
   "An association list that maps query types to their corresponding format strings."
   :type '(alist :key-type (string :tag "Query Type")
                 :value-type (string :tag "Format String"))
@@ -161,6 +183,14 @@ function."
                       (if chatgpt-enable-loading-ellipsis
                           ""
                         (concat "Waiting for ChatGPT...")))))))
+;; added by JHYEO
+(defun chatgpt--insert-current-buffer (response id)
+  "Insert RESPONSE into *ChatGPT* for ID."
+  (with-current-buffer (get-buffer-create "*ChatGPT*")
+    (save-excursion
+      (chatgpt--goto-identifier id)
+      (chatgpt--clear-line)
+      (insert response))))
 
 (defun chatgpt--insert-response (response id)
   "Insert RESPONSE into *ChatGPT* for ID."
@@ -206,6 +236,22 @@ function."
 
 (defvar chatgpt-id 0
   "Tracks responses in the background.")
+
+;; word.. line.. also make same error
+;; nodejs attributes
+;; TODO: made by jhyeo
+;; TODO: why it get's out nil? (it's not work)
+;;;###autoload
+;; nodejs attribute list
+
+;; (defun chatgpt-query-by-line (query)
+;;   "Query ChatGPT with from QUERY and interactively chosen 'query-line'. "
+;;   (interactive (thing-at-point 'line))
+;;   (message "Querying ChatGPT... %s" query))
+;; nodejs
+;; nodejs specific attributes list
+
+
 
 (defun chatgpt--query (query)
   "Send QUERY to the ChatGPT process.
@@ -291,6 +337,16 @@ returns the response."
             (equal query-type "custom"))
         (chatgpt--query-by-type query query-type)
       (chatgpt--query (format "%s\n\n%s" query-type query)))))
+
+;;;###autoload
+(defun chatgpt-query-by-line ()
+  "Run the current line of the buffer in a shell."
+  (interactive)
+  (let ((query (thing-at-point 'line)))
+    (when (string-match "[a-zA-Z0-9]" query)
+      (setq query (substring query (match-beginning 0))))
+    (message "Querying ChatGPT... %s" query)
+    (chatgpt--query query)))
 
 ;;;###autoload
 (defun chatgpt-query (query)
